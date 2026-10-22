@@ -2,10 +2,10 @@
 <!doctype html>
 <html lang="ko"><head>
 <meta name="copyright" content="© 저작권자 이름. All rights reserved.">
-<meta name="description" content="초등 수학·사회·과학·영어·한국어 몬스터 배틀 학습 게임">
+<meta name="description" content="초등 수학·사회·과학·영어·한국어 퀴즈 몬스터 학습 게임">
 <script>try{if(window.top!==window.self){window.top.location=window.self.location}}catch(e){}</script><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>몬스터 배틀</title>
+<title>퀴즈 몬스터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -349,13 +349,24 @@ h1,h2,.jua{font-family:Jua,"Noto Sans KR",sans-serif;font-weight:400}
 
 /* ===== 전장이 가로로 넓을 때 아군은 왼쪽, 적은 오른쪽 가장자리부터 배치 ===== */
 body.ingame .world{--edge:max(0px,calc((100cqw - 177.78cqh)/2))}
-body.ingame .world .mon.t0{margin-left:calc(var(--edge)*-.9)}
-body.ingame .world .mon.t1{margin-right:calc(var(--edge)*-.9)}
+body.ingame .world .mon.t0{margin-left:calc(var(--edge)*-.35)}
+body.ingame .world .mon.t1{margin-right:calc(var(--edge)*-.35)}
+
+/* ===== 문제칸 높이 고정 (긴 문제는 글자를 줄여서 맞춤) ===== */
+.qw{--qh:calc(var(--qf,26px)*2.7);height:var(--qh);flex:0 0 auto}
+.qw .q{height:100%;min-height:0!important;padding:0!important;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center}
+
+/* ===== UI 고정: 보기·안내문구·하단 높이를 일정하게 ===== */
+.ans button{overflow:hidden}
+body.ingame .arena .ans button{height:var(--bh);min-height:0;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1}
+.msg{height:2.9em;min-height:0!important;overflow:hidden}
+body.ingame .arena .msg{height:2.7em;min-height:0!important}
+body.ingame .arena .foot{min-height:2.6em;align-content:center}
 
 </style></head><body>
 <main>
 <section id="subject">
- <header class="hero"><h1>몬스터 배틀</h1><p>과목을 골라 주세요. 같은 몬스터와 규칙으로 여러 과목을 즐길 수 있어요.</p></header>
+ <header class="hero"><h1>퀴즈 몬스터</h1><p>과목을 골라 주세요. 같은 몬스터와 규칙으로 여러 과목을 즐길 수 있어요.</p></header>
  <div id="subjects" class="subjects"></div>
 </section>
 <section id="setup" class="hidden">
@@ -4108,7 +4119,7 @@ function confetti(){const c=$('conf'),x=c.getContext('2d');c.width=innerWidth;c.
 /* ====== 협동 모드 (보스 7스테이지) ====== */
 let healCnt=0,mode='vs',E=[],stageNo=0,coopT=0,lastTick=0,coopOver=false,trans=false,tickN=0;
 const PF=[.3,.4,.48,.6,.8,1],MINCAP=[1,2,3,3,3,3],BACKCAP=[0,0,1,1,2,2],HPN=[.55,.72,.9,1.1,1.1,1];
-const FORM_CO={1:[{x:3,b:8,w:26}],2:[{x:2,b:32,w:21},{x:9,b:6,w:23}],3:[{x:1,b:40,w:18},{x:12,b:22,w:20},{x:3,b:3,w:22}],4:[{x:1,b:38,w:16},{x:16,b:38,w:16},{x:3,b:4,w:19},{x:20,b:4,w:19}],5:[{x:1,b:40,w:14},{x:16,b:40,w:14},{x:31,b:40,w:14},{x:6,b:4,w:18},{x:26,b:4,w:18}],
+const FORM_CO={1:[{x:14,b:8,w:26}],2:[{x:6,b:34,w:21},{x:30,b:6,w:23}],3:[{x:4,b:42,w:18},{x:28,b:30,w:20},{x:14,b:3,w:22}],4:[{x:3,b:40,w:16},{x:27,b:40,w:16},{x:11,b:4,w:19},{x:33,b:4,w:19}],5:[{x:1,b:40,w:14},{x:16,b:40,w:14},{x:31,b:40,w:14},{x:6,b:4,w:18},{x:26,b:4,w:18}],
  6:[{x:1,b:40,w:14},{x:16,b:40,w:14},{x:31,b:40,w:14},{x:2,b:4,w:17},{x:19,b:4,w:17},{x:36,b:4,w:17}]};
 const BFORM={1:[{x:6,b:50,w:12}],2:[{x:3,b:52,w:12},{x:26,b:50,w:12}]};
 const MFORM={1:[{x:35,b:6,w:15}],2:[{x:33,b:22,w:13},{x:41,b:3,w:14}],3:[{x:31,b:24,w:12},{x:43,b:12,w:13},{x:33,b:1,w:13}]};
@@ -4320,26 +4331,34 @@ function repairPanel(i){const p=P[i];if(!p||!p.q||p.hp<=0||over)return;const q=p
  const strip=s=>String(s).replace(/<[^>]+>/g,'').replace(/\s+/g,'');
  const okQ=strip(qe.textContent)===strip(fmt(q.text)),okA=a.children.length===q.opts.length&&[...a.children].every((b,k)=>strip(b.textContent)===strip(fmt(q.opts[k])));
  if(okQ&&okA)return;
- if(!okQ)qe.innerHTML=fmt(q.text);
- if(!okA){a.innerHTML=q.opts.map((o,j)=>`<button data-j="${j}">${fmt(o)}</button>`).join('');if(q.nw)fitOpts(a);
+ if(!okQ){qe.innerHTML=fmt(q.text);fitQ(qe)}
+ if(!okA){a.innerHTML=q.opts.map((o,j)=>`<button data-j="${j}">${fmt(o)}</button>`).join('');fitOpts(a);
   if(p.lock)[...a.children].forEach((b,k)=>{b.disabled=true;b.classList.add(q.opts[k]===q.ans?'ok':'dim')});else refreshLock(i)}}
 let npT=0;
 function declutterNP(){const st=$('stage');if(!st)return;const sr=st.getBoundingClientRect();
- const els=[...document.querySelectorAll('#world .mon .np')].filter(n=>{const m=n.closest('.mon');return m&&getComputedStyle(m).display!=='none'});
- els.forEach(n=>{n.style.translate=''});
- const it=els.map(n=>({n,r:n.getBoundingClientRect()})).filter(x=>x.r.width>0).sort((a,b)=>a.r.top-b.r.top||a.r.left-b.r.left),placed=[];
- const hit=(a,b)=>a.left<b.right-1&&a.right>b.left+1&&a.top<b.bottom-1&&a.bottom>b.top+1;
- for(const x of it){const r=x.r,box=d=>({left:r.left,right:r.right,top:r.top+d,bottom:r.bottom+d});let dy=0,ok=false;
-  for(let k=0;k<10;k++){if(!placed.some(p=>hit(box(dy),p))){ok=true;break}dy-=r.height+2}
-  if(!ok||r.top+dy<sr.top+2){dy=0;for(let k=0;k<10;k++){if(!placed.some(p=>hit(box(dy),p)))break;dy+=r.height+2}}
-  if(dy)x.n.style.translate='0 '+Math.round(dy)+'px';placed.push(box(dy))}}
+ const items=[...document.querySelectorAll('#world .mon')].filter(m=>getComputedStyle(m).display!=='none').map(m=>({np:m.querySelector('.np'),fg:m.querySelector('.fig')})).filter(x=>x.np&&x.fg);
+ items.forEach(x=>{x.np.style.translate=''});
+ const shrink=(r,k)=>({left:r.left+r.width*k,right:r.right-r.width*k,top:r.top+r.height*k,bottom:r.bottom-r.height*k});
+ items.forEach(x=>{x.r=x.np.getBoundingClientRect();x.s=shrink(x.fg.getBoundingClientRect(),.14)});
+ items.sort((a,b)=>a.r.top-b.r.top||a.r.left-b.r.left);
+ const placed=[],area=(a,b)=>Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
+ for(const x of items){const r=x.r,w=r.width,h=r.height+2;let best=null;
+  for(const dx of [0,-.5*w,.5*w])for(let k=0;k<=5;k++)for(const sg of(k?[-1,1]:[0])){const dy=sg*k*h,bx={left:r.left+dx,right:r.right+dx,top:r.top+dy,bottom:r.bottom+dy};
+   let cost=Math.abs(dy)*.02+Math.abs(dx)*.01;placed.forEach(p=>{cost+=area(bx,p)*3});items.forEach(o=>{if(o!==x)cost+=area(bx,o.s)*2});
+   if(bx.top<sr.top+2||bx.bottom>sr.bottom-2||bx.left<sr.left+2||bx.right>sr.right-2)cost+=1e6;
+   if(!best||cost<best.cost)best={cost,dx,dy,bx}}
+  x.np.style.translate=(best.dx||best.dy)?`${Math.round(best.dx)}px ${Math.round(best.dy)}px`:'';placed.push(best.bx)}}
 window.addEventListener('resize',()=>{try{declutterNP()}catch(e){}});
-function fitOpts(a){[...a.children].forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize)||20;while(b.scrollWidth>b.clientWidth+1&&fs>10){fs-=1;b.style.fontSize=fs+'px'}})}
+function fitQ(qe){if(!qe)return;qe.style.fontSize='';let fs=parseFloat(getComputedStyle(qe).fontSize)||24;const over=()=>qe.scrollHeight>qe.clientHeight+1||qe.scrollWidth>qe.clientWidth+1;while(over()&&fs>10){fs-=1;qe.style.fontSize=fs+'px'}}
+window.addEventListener('resize',()=>{try{P.forEach(p=>fitQ($('q'+p.i)))}catch(e){}});
+function fitOpts(a){[...a.children].forEach(b=>{b.style.fontSize='';let fs=parseFloat(getComputedStyle(b).fontSize)||20;while((b.scrollWidth>b.clientWidth+1||b.scrollHeight>b.clientHeight+1)&&fs>9){fs-=1;b.style.fontSize=fs+'px'}})}
+function fitMsg(el){el.style.fontSize='';let fs=parseFloat(getComputedStyle(el).fontSize)||12;while(el.scrollHeight>el.clientHeight+1&&fs>8){fs-=.5;el.style.fontSize=fs+'px'}}
+try{new MutationObserver(ms=>{ms.forEach(m=>{const t=m.target.nodeType===3?m.target.parentElement:m.target,el=t&&t.closest&&t.closest('.msg');if(el)fitMsg(el)})}).observe($('arena'),{childList:true,characterData:true,subtree:true})}catch(e){}
 const sigQ=t=>/^[\d\s+−×÷=?()□.\[\]\/○<>%]+$/.test(t)?(String(t).match(/\d+|[+−×÷]/g)||[]).sort().join(','):String(t);
 function schedNext(i,ms){const p=P[i];clearTimeout(p.nqT);p.nqT=T(()=>nextQ(i),ms)}
 function nextQ(i,force){const p=P[i];if(over||p.hp<=0)return;if(p.q&&!p.lock&&!force)return;let q,s,k=0;const H=p.hist||[];do{s=ST[pick(p.stages)];q=s.gen()}while((q.text===p.last||H.includes(sigQ(q.text)))&&++k<30);p.hist=[...H.slice(-3),sigQ(q.text)];p.last=q.text;q.s=s;q.t=performance.now();p.q=q;p.lock=false;
  const qe=$('q'+i);qe.innerHTML=fmt(q.text);const ql=q.text.length;qe.classList.toggle('qi',q.text.includes('{{'));qe.classList.toggle('qo',/^\{\{[^}]+\}\}$/.test(q.text));qe.classList.toggle('s',ql>16&&ql<=34);qe.classList.toggle('xs',ql>34);$('chip'+i).textContent=`${s.cat.name} ${s.no}${SUBJ.unit}`;
- const ml=Math.max(...q.opts.map(o=>vis(o).length)),a=$('a'+i);a.className='ans'+(q.nw?' nw':(ml>9?' one':'')+(ml>34?' xl':ml>14?' lg':''));if(p.mir&&performance.now()<p.mir)a.classList.add('mir');a.innerHTML=q.opts.map((o,j)=>`<button data-j="${j}">${fmt(o)}</button>`).join('');if(q.nw)fitOpts(a);refreshLock(i)}
+ const ml=Math.max(...q.opts.map(o=>vis(o).length)),a=$('a'+i);a.className='ans'+(q.nw?' nw':(ml>9?' one':'')+(ml>34?' xl':ml>14?' lg':''));if(p.mir&&performance.now()<p.mir)a.classList.add('mir');a.innerHTML=q.opts.map((o,j)=>`<button data-j="${j}">${fmt(o)}</button>`).join('');fitOpts(a);fitQ(qe);refreshLock(i)}
 const LOCKS=[0,0,2,4],MULT=[0,1,2,3];
 function statUI(i){const p=P[i],a=[];if(p.buff>0)a.push(`🔥강화 ${p.buff}회`);if(p.shield>0)a.push(`🛡️보호막 ${p.shield}회`);if(typeof fxText==='function')a.push(...fxText(p));const e=$('stt'+i);if(e)e.textContent=a.join(' ')}
 function refreshLock(i){const p=P[i],lk=$('lk'+i),a=$('a'+i);if(!p||!lk)return;const rem=p.lockUntil-performance.now();
@@ -4404,7 +4423,7 @@ function toSetup(){document.body.classList.remove('ingame');clearInterval(coopT)
 $('go').onclick=startGame;$('again').onclick=startGame;$('back').onclick=toSetup;$('quit').onclick=toSetup;
 $('snd').onclick=()=>{snd=!snd;$('snd').textContent=snd?'🔊 효과음':'🔇 효과음';if(snd)sfx.ok()};
 function drawPresets(){$('presets').innerHTML=`<span>${SUBJ.presetLabel}</span>${SUBJ.presets.map(([k,l])=>`<button data-g="${k}">${l}</button>`).join('')}<button data-g="clear">모두 해제</button>`}
-function updSubjUI(){$('ttl').textContent=SUBJ.name+' 몬스터 배틀';$('hp2').textContent=SUBJ.hero;$('subjchip').textContent=SUBJ.icon+' '+SUBJ.name;$('pickh').textContent=SUBJ.pickTitle;drawPresets();
+function updSubjUI(){$('ttl').textContent='퀴즈 몬스터 · '+SUBJ.name;$('hp2').textContent=SUBJ.hero;$('subjchip').textContent=SUBJ.icon+' '+SUBJ.name;$('pickh').textContent=SUBJ.pickTitle;drawPresets();
  $('note').innerHTML=`같은 기기에서 함께 즐기는 게임이에요. 플레이어마다 몬스터·HP·${SUBJ.unit}${SUBJ.unit==='단원'?'을':'를'} 따로 고를 수 있어요.<br>${SUBJ.note}<br>정답은 상대를 공격하고, 오답이면 내 HP가 줄어요. 연속으로 틀리면 피해가 커지고 버튼이 잠겨요. 팀전은 상대 팀 몬스터가 모두 쓰러지면 승리!<br>협동 모드는 보스가 공격하기 5초 전에 보스 머리 위에 누구를 공격할지 알려 줘요. 스테이지를 클리어하면 체력 30%가 회복되고 쓰러진 친구는 부활해요.`}
 function drawSubjects(){$('subjects').innerHTML=SUBJECTS.map(s=>`<button class="sjc ${cfg.subject===s.id?'last':''}" data-s="${s.id}"><span class="sji">${s.icon}</span><b>${s.name}</b><small>${s.tag}</small><em>${s.nUnits}개 ${s.unit} · ${s.nQs?s.nQs+(s.qUnit||'문항'):'문제 자동 생성'}</em></button>`).join('')}
 function chooseSubject(id){setSubject(id);save();drawAll();updSubjUI();$('subject').classList.add('hidden');$('setup').classList.remove('hidden');window.scrollTo({top:0})}
